@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dobré Zprávy - Pozitivní novinky z celého světa</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom background gradient and smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-8 md:py-12 text-center max-w-4xl">
+            <span class="inline-block bg-emerald-400 bg-opacity-30 text-emerald-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-3">Denní dávka optimismu</span>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-2">Dobré Zprávy</h1>
+            <p class="text-base md:text-lg text-emerald-50 font-light max-w-2xl mx-auto">Insprující příběhy, vědecké úspěchy a pozitivní novinky, které rozjasní váš den a dodají naději do budoucna.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Grid Container for Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="news-container">
+            
+            <!-- Placeholder Card -->
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-100 flex flex-col h-full">
+                <!-- Card Image -->
+                <div class="relative h-48 bg-slate-200 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600" alt="Ilustrační obrázek" class="w-full h-full object-cover">
+                    <span class="absolute top-3 left-3 bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">Věda & Naděje</span>
+                </div>
+                
+                <!-- Card Body -->
+                <div class="p-5 flex flex-col flex-grow">
+                    <!-- Date -->
+                    <span class="text-xs text-slate-400 font-medium mb-2">26. října 2026</span>
+                    
+                    <!-- Title -->
+                    <h3 class="text-lg font-bold text-slate-800 leading-snug mb-2 hover:text-emerald-600 transition-colors duration-200">
+                        <a href="#">Vědci objevili nový způsob, jak efektivně čistit oceány od mikroplastů</a>
+                    </h3>
+                    
+                    <!-- Excerpt -->
+                    <p class="text-sm text-slate-500 line-clamp-3 mb-4">
+                        Nový průlomový biologický filtr využívající upravené enzymy dokáže rozložit až 90 % mikroplastů během několika málo dní bez poškození mořského ekosystému.
+                    </p>
+                    
+                    <!-- Footer/Button (aligned to bottom) -->
+                    <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <span class="text-xs text-slate-400 font-medium">Zdroj: EkoWeb.cz</span>
+                        <a href="#" class="inline-flex items-center text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
+                            Číst více
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800">
+        <div class="container mx-auto px-4 text-center text-sm">
+            <p>&copy; 2026 Dobré Zprávy. Vytvořeno pro šíření radosti a inspirace.</p>
+        </div>
+    </footer>
+
+
+    <!-- JavaScript pro načítání, filtraci, řazení a vykreslování RSS zpráv -->
+    <script>
+        const rssFeeds = [
+            'https://www.irozhlas.cz/rss/irozhlas',
+            'https://ct24.ceskatelevize.cz/rss/hlavni-zpravy',
+            'https://www.denik.cz/rss/z-domova.html'
+        ];
+
+        const negativeKeywords = [
+            'tragédie', 'nehoda', 'smrt', 'válka', 'požár', 'krize', 'oběť', 'vražda',
+            'zatčen', 'zemřel', 'pohřešován', 'nehody', 'střet', 'násilí', 'krádež',
+            'loupež', 'korupce', 'inflace', 'zdražování', 'soud', 'obviněn', 'útok'
+        ];
+
+        async function fetchFeed(url) {
+            const apiEndpoint = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+            try {
+                const response = await fetch(apiEndpoint);
+                if (!response.ok) throw new Error(`HTTP chyba: ${response.status}`);
+                const data = await response.json();
+                return data.status === 'ok' ? (data.items || []) : [];
+            } catch (error) {
+                console.error(`Chyba při stahování RSS z ${url}:`, error);
+                return [];
+            }
+        }
+
+        function filterAndSortNews(articles) {
+            const filtered = articles.filter(article => {
+                const title = (article.title || '').toLowerCase();
+                const description = (article.description || '').toLowerCase();
+                const content = (article.content || '').toLowerCase();
+
+                const hasNegative = negativeKeywords.some(keyword =>
+                    title.includes(keyword) || description.includes(keyword) || content.includes(keyword)
+                );
+
+                return !hasNegative;
+            });
+
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.pubDate || 0);
+                const dateB = new Date(b.pubDate || 0);
+                return dateB - dateA;
+            });
+
+            return filtered;
+        }
+
+        // Funkce pro dynamické vykreslení článků v moderním designu
+        function renderArticles(articles) {
+            const container = document.getElementById('news-container');
+            if (!container) return;
+
+            container.innerHTML = ''; // Vyčištění placeholderu nebo předchozích zpráv
+
+            if (articles.length === 0) {
+                container.className = 'col-span-full text-center py-12';
+                container.innerHTML = `
+                    <div class="max-w-md mx-auto">
+                        <svg class="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <h3 class="text-lg font-bold text-slate-700 mb-1">Zatím žádné pozitivní zprávy</h3>
+                        <p class="text-sm text-slate-500">Zkuste to prosím později, nebo zkontrolujte připojení k internetu.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ujistíme se, že mřížka má správné třídy pro zobrazení karet
+            container.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
+
+            articles.forEach(article => {
+                // Extrakce popisu a omezení délky textu
+                let excerpt = article.description || article.content || 'Kliknutím na tlačítko níže si můžete přečíst celý článek na webu zdroje.';
+                excerpt = excerpt.replace(/<[^>]*>/g, ''); // Odstranění HTML značek
+                if (excerpt.length > 140) {
+                    excerpt = excerpt.substring(0, 137) + '...';
+                }
+
+                // Formátování data do češtiny
+                let dateString = '';
+                if (article.pubDate) {
+                    const date = new Date(article.pubDate);
+                    dateString = date.toLocaleDateString('cs-CZ', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+
+                // Detekce zdroje z domény odkazu
+                let sourceName = 'Zpravodajství';
+                try {
+                    const urlObj = new URL(article.link);
+                    sourceName = urlObj.hostname.replace('www.', '');
+                } catch (e) {} 
+
+                // Defaultní obrázek z Unsplash, pokud chybí v RSS
+                const defaultImages = [
+                    'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600',
+                    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600',
+                    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=600',
+                    'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&q=80&w=600'
+                ];
+                const randomDefault = defaultImages[Math.floor(Math.random() * defaultImages.length)];
+                const imageSrc = article.thumbnail || article.enclosure?.link || randomDefault;
+
+                const cardHtml = `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-100 flex flex-col h-full">
+                    <div class="relative h-48 bg-slate-200 overflow-hidden">
+                        <img src="${imageSrc}" alt="Ilustrační obrázek" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='${randomDefault}';">
+                        <span class="absolute top-3 left-3 bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">Pozitivní sentiment</span>
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <span class="text-xs text-slate-400 font-medium mb-2">${dateString}</span>
+                        <h3 class="text-base font-bold text-slate-800 leading-snug mb-2 hover:text-emerald-600 transition-colors duration-200">
+                            <a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a>
+                        </h3>
+                        <p class="text-sm text-slate-500 mb-4">${excerpt}</p>
+                        <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                            <span class="text-xs text-slate-400 font-medium">Zdroj: ${sourceName}</span>
+                            <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
+                                Číst více
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        async function loadAllNews() {
+            console.log('Spouštím stahování zpráv...');
+            const promises = rssFeeds.map(feed => fetchFeed(feed));
+            const results = await Promise.all(promises);
+            const allArticles = results.flat();
+
+            console.log(`Celkem staženo surových zpráv: ${allArticles.length}`);
+
+            const positiveNews = filterAndSortNews(allArticles);
+            console.log(`Počet pozitivních zpráv po filtraci: ${positiveNews.length}`);
+
+            renderArticles(positiveNews);
+            window.filteredArticles = positiveNews;
+            return positiveNews;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllNews();
+        });
+    </script>
+
+</body>
+</html>
